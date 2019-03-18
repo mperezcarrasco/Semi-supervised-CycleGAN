@@ -1,9 +1,9 @@
 import os
 import torch
 import json
-import pickle
-import gzip, pickle
 import numpy as np
+import gzip, pickle
+from PIL import Image
 from scipy.io import loadmat
 from torch.utils import data
 from torchvision import datasets
@@ -25,13 +25,15 @@ class Preprocess:
 		self.source_loader_unsup, self.target_loader_unsup = self.get_loaders()
 		self.source_loader_sup, self.target_loader_sup = self.get_loaders(sup=True)
 		self.source_loader_test, self.target_loader_test = self.get_loaders(train=False)
-		self.proportions = torch.Tensor([0.1]*10)
 
 
 	def get_parameters(self):
+
 		with open('./{}/config.json'.format(self.exp_name), 'r') as f:
 			params = json.load(f)
+
 		return params
+
 
 	def get_loaders(self, train=True, sup=False):
 
@@ -49,33 +51,17 @@ class Preprocess:
 		                 transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
 		if self.source_name == 'mnist' and self.target_name == 'svhn':
-			source_loader = self.get_mnist(train, sup, repeat=True)
-			target_loader = self.get_svhn(train, sup, 'target')
-
-		elif self.source_name == 'mnist' and self.target_name == 'usps':
 			source_loader = self.get_mnist(train, sup)
-			target_loader = self.get_usps(train, sup, 'target')
-
-		elif self.source_name == 'usps' and self.target_name == 'mnist':
-			source_loader = self.get_usps(train, sup)
-			target_loader = self.get_mnist(train, sup, 'target')
+			target_loader = self.get_svhn(train, sup, 'target')
 
 		elif self.source_name == 'usps' and self.target_name == 'svhn':
-			source_loader = self.get_usps(train, sup, repeat=True)
+			source_loader = self.get_usps(train, sup)
 			target_loader = self.get_svhn(train, sup, 'target')
-
-		elif self.source_name == 'svhn' and self.target_name == 'mnist':
-			source_loader = self.get_svhn(train, sup)
-			target_loader = self.get_mnist(train, sup, 'target', repeat=True)
-
-		elif self.source_name == 'svhn' and self.target_name == 'usps':
-			source_loader = self.get_svhn(train, sup)
-			target_loader = self.get_usps(train, sup, 'target', repeat=True)
 
 		return source_loader, target_loader
 
 
-	def get_mnist(self, train, sup, domain='source', repeat=False):
+	def get_mnist(self, train, sup, domain='source'):
 
 		batch_size = self.params['batch_size']
 
@@ -87,17 +73,14 @@ class Preprocess:
 
 		if sup:
 			X, y = self.get_labeled_samples(X, y.numpy(), domain)
-			batch_size = X.size(0)
-
-		if repeat:
-			X = np.repeat(X.reshape(X.shape[0], 28, 28, 1), 3, 3)
 
 		mnist = CustomDataset(X.numpy(), y, self.transform)
 
 		loader = torch.utils.data.DataLoader(dataset=mnist,
 		                                     batch_size=batch_size,
 		                                     shuffle=True,
-		                                     num_workers=self.params['num_workers'])
+		                                     num_workers=self.params['num_workers'],
+		                                     worker_init_fn=0)
 		return loader
 
 
@@ -117,19 +100,16 @@ class Preprocess:
 
 		if sup:
 			X, y = self.get_labeled_samples(X, y, domain)
-			batch_size = X.shape[0]
-
-		if repeat:
-			X = np.repeat(X.reshape(X.shape[0], 28, 28, 1), 3, 3).astype('uint8')
-		else:
-			X = X.reshape(X.shape[0], 28, 28).astype('uint8')
+	
+		X = X.reshape(X.shape[0], 28, 28).astype('uint8')
 
 		usps = CustomDataset(X, y, self.transform)
 
 		loader = torch.utils.data.DataLoader(dataset=usps,
 		                                     batch_size=batch_size,
 		                                     shuffle=True,
-		                                     num_workers=self.params['num_workers'])
+		                                     num_workers=self.params['num_workers'],
+		                                     worker_init_fn=0)
 		return loader
 
 
@@ -147,16 +127,14 @@ class Preprocess:
 			y[y == 10] = 0
 			batch_size = X.shape[0]
 
-		if sup:
-			X, y = self.get_labeled_samples(X, y, domain)
-			batch_size = X.shape[0]
-
+		y = y.reshape(y.shape[0],)
 		svhn = CustomDataset(X, y, self.transform)
 
 		loader = torch.utils.data.DataLoader(dataset=svhn,
 		                                     batch_size=batch_size,
 		                                     shuffle=True,
-		                                     num_workers=self.params['num_workers'])
+		                                     num_workers=self.params['num_workers'],
+		                                     worker_init_fn=0)
 		return loader
 
 
@@ -205,8 +183,6 @@ class Preprocess:
 
 		return X_sup, y_sup
 
-
-from PIL import Image
 
 
 class CustomDataset(data.Dataset):

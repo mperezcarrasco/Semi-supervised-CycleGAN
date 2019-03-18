@@ -1,0 +1,11 @@
+{
+    "batch_size": 100,
+    "num_workers": 0,
+    "lr": 2e-4,
+    "beta1":0.5, 
+    "beta2":0.999,
+    "num_epochs": 4000,
+    "num_classes": 10
+
+
+}

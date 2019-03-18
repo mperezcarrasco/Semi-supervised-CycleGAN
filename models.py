@@ -6,7 +6,7 @@ import torch.nn.functional as F
 class Gxy(nn.Module):
     def __init__(self, conv_dim=64):
         super(Gxy, self).__init__()
-        self.cnn1 = Conv(3, conv_dim, 4, 2, 1)
+        self.cnn1 = Conv(1, conv_dim, 4, 2, 1)
         self.cnn2 = Conv(conv_dim, conv_dim*2, 3, 2, 1)
         self.cnn3 = Conv(conv_dim*2, conv_dim*2, 3, 1, 1)
         self.cnn4 = Conv(conv_dim*2, conv_dim*2, 3, 1, 1)
@@ -32,7 +32,7 @@ class Gyx(nn.Module):
         self.cnn3 = Conv(conv_dim*2, conv_dim*2, 3, 1, 1)
         self.cnn4 = Conv(conv_dim*2, conv_dim*2, 3, 1, 1)
         self.cnn5 = Deconv(conv_dim*2, conv_dim, 4, 2, 1)
-        self.cnn6 = Deconv(conv_dim, 3, 4, 2, 1, bn=False)
+        self.cnn6 = Deconv(conv_dim, 1, 4, 2, 1, bn=False)
         
     def forward(self, x):
         out = F.leaky_relu(self.cnn1(x), 0.05) 

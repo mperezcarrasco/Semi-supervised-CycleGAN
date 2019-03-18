@@ -23,6 +23,7 @@ class SSGAN:
 		self.criterion = nn.CrossEntropyLoss()
 		self.build_model()
 
+
 	def build_model(self):
 		self.Gxy = Gxy().to(device)
 		self.Gyx = Gyx().to(device)
@@ -35,19 +36,23 @@ class SSGAN:
 		self.G_optimizer = optim.Adam(G_params, self.params['lr'], [self.params['beta1'], self.params['beta2']])
 		self.D_optimizer = optim.Adam(D_params, self.params['lr'], [self.params['beta1'], self.params['beta2']])
 
+
 	def reset_grad(self):
 		self.G_optimizer.zero_grad()
 		self.D_optimizer.zero_grad()
+
 
 	def to_device(self):
 		self.img_x, self.label_x = self.img_x.to(device), self.label_x.to(device)
 		self.img_y, self.label_y = self.img_y.to(device), self.label_y.to(device)
 
+
 	def train(self):
 
-		nb_batches = min(len(self.source_loader), len(self.target_loader)) - 1
+		nb_batches = min(len(self.source_loader), len(self.target_loader))
 
 		for epoch in range(self.params['num_epochs']):
+			print ('Epoch: {}'.format(epoch+1))
 			source_iterator = iter(self.source_loader)
 			target_iterator = iter(self.target_loader)
 			for batch in range(nb_batches):
@@ -59,7 +64,8 @@ class SSGAN:
 				self.train_generators()
 
 			self.save_checkpoint()
-			self.plot_images(5, epoch)
+			self.plot_images(6, epoch)
+
 
 	def train_discriminators(self):
 
@@ -69,7 +75,7 @@ class SSGAN:
 		d_x_loss = self.criterion(out, self.label_x)
 
 		out = self.Dy(self.img_y)
-		d_y_loss = self.criterion(out, self.label_y)
+		d_y_loss = self.criterion(out, self.label_y.long())
 
 		real_loss = d_x_loss + d_y_loss
 		real_loss.backward()
@@ -111,7 +117,7 @@ class SSGAN:
 
 		fake_img_x = self.Gyx(self.img_y)
 		out = self.Dx(fake_img_x)
-		y_x_y_loss = self.criterion(out, self.label_y)
+		y_x_y_loss = self.criterion(out, self.label_y.long())
 		img_reconst = self.Gxy(fake_img_x)
 		y_x_y_loss += torch.mean((self.img_y - img_reconst)**2)
 
@@ -126,17 +132,13 @@ class SSGAN:
 		self.Dy.eval()
 		fake_images = self.Gxy(images)
 		fake_labels = np.argmax(self.Dy(fake_images).cpu().detach().numpy(), axis=1)
-
+		
+		f, ax = plt.subplots(2, 3)
 		for i in range(nb_images):
-			plt.clf()
-			real_im = (images[i].cpu().numpy().reshape(32, 32) + 1)/2.
 			fake_im = (fake_images[i].cpu().detach().numpy().transpose(1,2,0) + 1)/2.
-			f, (ax1, ax2) = plt.subplots(1, 2)
-			ax1.imshow(real_im)
-			ax1.set_title('Real: {}'.format(labels[i]))
-			ax2.imshow(fake_im)
-			ax2.set_title('Fake: {}'.format(fake_labels[i]))
-			plt.savefig('./samples/epoch_{}_img{}'.format(epoch, i))
+			ax[int(i/3),i%3].imshow(fake_im)
+			ax[int(i/3),i%3].set_title('Fake: {}'.format(fake_labels[i]))
+		plt.savefig('./samples/epoch_{}'.format(epoch))
 
 
 	def save_checkpoint(self):
