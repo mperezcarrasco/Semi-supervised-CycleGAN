@@ -16,8 +16,8 @@ class SSGAN:
 	def __init__(self, data):
 		self.data = data
 		self.params = self.data.params
-		self.source_loader = self.data.source_loader
-		self.target_loader = self.data.target_loader
+		self.source_loader = self.data.source_loader_sup
+		self.target_loader = self.data.target_loader_sup
 		self.source_loader_test = self.data.source_loader_test
 		self.target_loader_test = self.data.target_loader_test
 		self.criterion = nn.CrossEntropyLoss()
@@ -140,45 +140,6 @@ class SSGAN:
 
 
 	def save_checkpoint(self):
-
 		state = {'state_dict': self.Gxy.state_dict()}
 		torch.save(state, 'Gxy_model.pth.tar')
 
-
-"""
-	def train_discrminators(self):
-		self.reset_grad()
-
-		# Discrimiantor x
-		Fake_y_x = Variable(torch.ones(self.X_x.size(0))*self.params['num_classes']).long().to(device)
-
-		Fake_X_x = self.Gyx(self.X_y)
-
-		X_x = torch.cat((self.X_x, Fake_X_x), dim = 0)
-		y_x = torch.cat((self.y_x, Fake_y_x), dim = 0)
-
-		#ix = torch.randperm(X_x.size(0))
-		#X_x = X_x[ix]
-		#y_x = y_x[ix]
-		out = self.Dx(X_x)
-		d_x_loss = self.criterion(out, y_x)
-
-		# Discrimiantor y
-
-		Fake_y_y = Variable(torch.ones(self.X_y.size(0))*self.params['num_classes']).long().to(device)
-
-		Fake_X_y = self.Gxy(self.X_x)
-
-		X_y = torch.cat((self.X_y, Fake_X_y), dim = 0)
-		y_y = torch.cat((self.y_y, Fake_y_y), dim = 0)
-
-		#ix = torch.randperm(X_y.size(0))
-		#X_y = X_y[ix]
-		#y_y = y_y[ix]
-		out = self.Dy(X_y)
-		d_y_loss = self.criterion(out, y_y)
-
-		loss = d_x_loss + d_y_loss
-		loss.backward()
-		self.d_optimizer.step()
-"""
