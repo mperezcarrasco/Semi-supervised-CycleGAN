@@ -28,23 +28,18 @@ class Preprocess:
 
 
 	def get_parameters(self):
-
 		with open('./{}/config.json'.format(self.exp_name), 'r') as f:
 			params = json.load(f)
-
 		return params
 
 
 	def get_loaders(self, train=True, sup=False):
-
 		if self.exp_name == 'digits':
 			source_loader, target_loader = self.get_digits(train, sup)
-
 		return source_loader, target_loader
 
 
 	def get_digits(self, train, sup):
-
 		self.transform = transforms.Compose([
 		                 transforms.Resize(32),
 		                 transforms.ToTensor(),
@@ -57,12 +52,10 @@ class Preprocess:
 		elif self.source_name == 'usps' and self.target_name == 'svhn':
 			source_loader = self.get_usps(train, sup)
 			target_loader = self.get_svhn(train, sup, 'target')
-
 		return source_loader, target_loader
 
 
 	def get_mnist(self, train, sup, domain='source'):
-
 		batch_size = self.params['batch_size']
 
 		if train:
@@ -85,7 +78,6 @@ class Preprocess:
 
 
 	def get_usps(self, train, sup, domain='source', repeat=False):
-
 		batch_size = self.params['batch_size']
 
 		if train:
@@ -114,7 +106,6 @@ class Preprocess:
 
 
 	def get_svhn(self, train, sup, domain='source', repeat=False):
-
 		batch_size = self.params['batch_size']
 
 		if train:
@@ -139,7 +130,6 @@ class Preprocess:
 
 
 	def get_labeled_samples(self, X, y, domain):
-
 		if domain == 'source':
 			if self.balanced_s:
 				X, y = self.get_labeled_samples_balanced(X, y, self.labeled_source)
@@ -151,12 +141,10 @@ class Preprocess:
 				X, y = self.get_labeled_samples_balanced(X, y, self.labeled_target)
 			else:
 				X, y = self.get_labeled_samples_unbalanced(X, y, self.labeled_target)
-
 		return X, y
 
 
 	def get_labeled_samples_balanced(self, X, y, samples_to_label):
-
 		np.random.seed(0)
 
 		classes = np.unique(y)
@@ -170,17 +158,14 @@ class Preprocess:
 		np.random.shuffle(ix)
 		X_sup = X[ix]
 		y_sup = y[ix]
-
 		return X_sup, y_sup
 
 
 	def get_labeled_samples_unbalanced(self, X, y, samples_to_label):
-
 		np.random.seed(0)
 		ix = np.random.choice(len(X), samples_to_label, replace = False)
 		X_sup = X[ix]
 		y_sup = y[ix]
-
 		return X_sup, y_sup
 
 
@@ -198,7 +183,6 @@ class CustomDataset(data.Dataset):
         x = Image.fromarray(x)
         if self.transform:
             x = self.transform(x)
-
         return x, y
     
     def __len__(self):

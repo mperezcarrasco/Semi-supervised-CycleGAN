@@ -48,7 +48,6 @@ class SSGAN:
 
 
 	def train(self):
-
 		nb_batches = min(len(self.source_loader), len(self.target_loader))
 
 		for epoch in range(self.params['num_epochs']):
@@ -68,7 +67,6 @@ class SSGAN:
 
 
 	def train_discriminators(self):
-
 		# Real loss
 		self.reset_grad()
 		out = self.Dx(self.img_x)
@@ -99,7 +97,6 @@ class SSGAN:
 
 
 	def train_generators(self):
-
 		# X -> Y -> X cycle
 		self.reset_grad()
 
