@@ -3,6 +3,6 @@ Implementation of semi-supervised CycleGAN ([Zhu J. & Park T. et al. 2017](https
 
 
 
-[What is this](data/sscgan.png)
+[Example](data/sscgan.png)
 
 
